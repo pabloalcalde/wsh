@@ -1,0 +1,42 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+
+def calculate_social_cost(data):
+    # Example formula for calculating social cost based on indicators
+    data['Economic Burden'] = data['Water Expenditure'] / data['Household Income']
+    data['Health Risk Index'] = (data['Waterborne Diseases'] * 0.5) + (data['Mental Health Stress'] * 0.3) + (data['Time Poverty'] * 0.2)
+    data['Governance Trust Score'] = (data['Public Trust in Utilities'] * 0.4) + (data['Corruption Perception'] * 0.6)
+    data['Resilience Index'] = (data['Storage Capacity'] * 0.5) + (data['Community Networks'] * 0.5)
+    
+    # Weighted social cost index
+    data['Social Cost Index'] = (
+        (data['Economic Burden'] * 0.3) +
+        (data['Health Risk Index'] * 0.4) +
+        ((1 - data['Governance Trust Score']) * 0.2) +
+        ((1 - data['Resilience Index']) * 0.1)
+    ) * 100
+    
+    return data
+
+st.title('Social Cost of Water Insecurity Calculator')
+
+st.sidebar.header("Upload Data")
+uploaded_file = st.sidebar.file_uploader("Upload CSV file", type=["csv"])
+
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    st.write("### Raw Data")
+    st.write(df.head())
+    
+    df = calculate_social_cost(df)
+    
+    st.write("### Calculated Social Cost Metrics")
+    st.dataframe(df[['Economic Burden', 'Health Risk Index', 'Governance Trust Score', 'Resilience Index', 'Social Cost Index']])
+    
+    st.download_button(
+        label="Download Results as CSV",
+        data=df.to_csv(index=False),
+        file_name="social_cost_results.csv",
+        mime="text/csv"
+    )
